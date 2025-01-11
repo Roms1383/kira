@@ -48,7 +48,7 @@ impl Deref for Panning {
 impl From<f32> for Panning {
 	fn from(value: f32) -> Self {
 		debug_assert!(
-			value >= -1.0 && value <= 1.0,
+			(-1.0..=1.0).contains(&value),
 			"panning must be between -1.0 and 1.0 (inclusive)"
 		);
 		Self(value)
