@@ -4,8 +4,8 @@ mod test;
 use std::{sync::Arc, time::Duration};
 
 use crate::sound::{EndPosition, IntoOptionalRegion, PlaybackPosition, Region, SoundData};
-use crate::{Tween, Value};
 use crate::{Decibels, Panning, PlaybackRate, StartTime};
+use crate::{Tween, Value};
 use rtrb::RingBuffer;
 
 use super::sound::Shared;

@@ -20,8 +20,7 @@ pub use handle::*;
 use crate::{
 	command_writers_and_readers,
 	info::{Info, WhenToStart},
-	Tween, Tweenable,
-	StartTime,
+	StartTime, Tween, Tweenable,
 };
 
 use super::Modulator;

@@ -14,8 +14,7 @@ use crate::{
 	info::Info,
 	playback_state_manager::PlaybackStateManager,
 	sound::{transport::Transport, PlaybackState, Sound},
-	Tween,
-	Decibels, Panning, Parameter, PlaybackRate, StartTime,
+	Decibels, Panning, Parameter, PlaybackRate, StartTime, Tween,
 };
 
 use self::resampler::Resampler;
