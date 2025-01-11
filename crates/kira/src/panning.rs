@@ -6,7 +6,6 @@ use crate::{tween::Tweenable, Value};
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "serde", serde(transparent))]
 /// The stereo positioning of a sound.
 ///
 /// Valid panning values range from `-1.0` to `1.0`. A value of `-1.0`
@@ -14,7 +13,7 @@ use crate::{tween::Tweenable, Value};
 /// of `1.0` will cause a sound to only be output from the right speaker.
 /// A value of `0.0` will cause a sound to be played at an equal volume
 /// from both speakers.
-pub struct Panning(pub f32);
+pub struct Panning(#[cfg_attr(feature = "serde", serde(deserialize_with = "deserialize"))] pub f32);
 
 impl Panning {
 	/// Play the sound from the left speaker only.
@@ -134,5 +133,22 @@ impl Rem<f32> for Panning {
 impl RemAssign<f32> for Panning {
 	fn rem_assign(&mut self, rhs: f32) {
 		self.0 %= rhs;
+	}
+}
+
+#[cfg(feature = "serde")]
+fn deserialize<'de, D>(deserializer: D) -> Result<f32, D::Error>
+where
+	D: serde::de::Deserializer<'de>,
+{
+	use serde::Deserialize;
+	let value = f32::deserialize(deserializer)?;
+	if (-1.0..=1.0).contains(&value) {
+		Ok(value)
+	} else {
+		Err(serde::de::Error::invalid_value(
+			serde::de::Unexpected::Float(value.into()),
+			&"panning must be between -1.0 and 1.0 (inclusive)",
+		))
 	}
 }
