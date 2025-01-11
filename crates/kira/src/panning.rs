@@ -71,11 +71,12 @@ impl Add<Panning> for Panning {
 	type Output = Panning;
 
 	fn add(self, rhs: Panning) -> Self::Output {
-		Self((self.0 + rhs.0).clamp(Self::LEFT.0, Self::RIGHT.0))
+		self.saturating_add(rhs.0)
 	}
 }
 
 impl AddAssign<Panning> for Panning {
+	#[inline]
 	fn add_assign(&mut self, rhs: Panning) {
 		*self = self.add(rhs);
 	}
@@ -85,11 +86,12 @@ impl Sub<Panning> for Panning {
 	type Output = Panning;
 
 	fn sub(self, rhs: Panning) -> Self::Output {
-		Self((self.0 - rhs.0).clamp(Self::LEFT.0, Self::RIGHT.0))
+		self.saturating_sub(rhs.0)
 	}
 }
 
 impl SubAssign<Panning> for Panning {
+	#[inline]
 	fn sub_assign(&mut self, rhs: Panning) {
 		*self = self.sub(rhs);
 	}
@@ -99,11 +101,12 @@ impl Mul<f32> for Panning {
 	type Output = Panning;
 
 	fn mul(self, rhs: f32) -> Self::Output {
-		Self((self.0 * rhs).clamp(Self::LEFT.0, Self::RIGHT.0))
+		self.saturating_mul(rhs)
 	}
 }
 
 impl MulAssign<f32> for Panning {
+	#[inline]
 	fn mul_assign(&mut self, rhs: f32) {
 		*self = self.mul(rhs);
 	}
@@ -113,13 +116,12 @@ impl Div<f32> for Panning {
 	type Output = Panning;
 
 	fn div(self, rhs: f32) -> Self::Output {
-		debug_assert!(!rhs.is_nan(), "cannot divide by NaN");
-		debug_assert_ne!(rhs, 0.0, "cannot divide by zero");
-		Self((self.0 / rhs).clamp(Self::LEFT.0, Self::RIGHT.0))
+		self.saturating_div(rhs)
 	}
 }
 
 impl DivAssign<f32> for Panning {
+	#[inline]
 	fn div_assign(&mut self, rhs: f32) {
 		*self = self.div(rhs);
 	}
@@ -137,13 +139,52 @@ impl Rem<f32> for Panning {
 	type Output = Panning;
 
 	fn rem(self, rhs: f32) -> Self::Output {
-		debug_assert!(!rhs.is_nan(), "cannot get remainder of NaN");
-		Self((self.0 % rhs).clamp(Self::LEFT.0, Self::RIGHT.0))
+		self.saturating_rem(rhs)
 	}
 }
 
 impl RemAssign<f32> for Panning {
+	#[inline]
 	fn rem_assign(&mut self, rhs: f32) {
 		*self = self.rem(rhs);
+	}
+}
+
+#[inline]
+const fn bounded(value: f32) -> Panning {
+	match value {
+		x if x < Panning::LEFT.0 => Panning::LEFT,
+		x if x > Panning::RIGHT.0 => Panning::RIGHT,
+		x => Panning(x),
+	}
+}
+
+impl Panning {
+	#[inline]
+	const fn saturating_add(self, v: f32) -> Self {
+		debug_assert!(!v.is_nan(), "cannot add by NaN");
+		bounded(self.0 + v)
+	}
+	#[inline]
+	const fn saturating_sub(self, v: f32) -> Self {
+		debug_assert!(!v.is_nan(), "cannot substract by NaN");
+		bounded(self.0 - v)
+	}
+	#[inline]
+	const fn saturating_mul(self, v: f32) -> Self {
+		debug_assert!(!v.is_nan(), "cannot multiply by NaN");
+		bounded(self.0 * v)
+	}
+	#[inline]
+	const fn saturating_div(self, v: f32) -> Self {
+		debug_assert!(!v.is_nan(), "cannot divide by NaN");
+		debug_assert!(v != 0.0, "cannot divide by zero");
+		bounded(self.0 / v)
+	}
+	#[inline]
+	const fn saturating_rem(self, v: f32) -> Self {
+		debug_assert!(!v.is_nan(), "cannot get remainder by NaN");
+		debug_assert!(v != 0.0, "cannot get remainder by zero");
+		bounded(self.0 % v)
 	}
 }
