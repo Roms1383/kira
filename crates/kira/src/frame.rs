@@ -49,7 +49,7 @@ impl Frame {
 		if panning == Panning::CENTER {
 			return self;
 		}
-		let left_right_mix = (panning.0 + 1.0) * 0.5;
+		let left_right_mix = (*panning + 1.0) * 0.5;
 		Self::new(
 			self.left * (1.0 - left_right_mix).sqrt(),
 			self.right * left_right_mix.sqrt(),

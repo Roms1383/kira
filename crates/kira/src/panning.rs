@@ -1,5 +1,5 @@
 use std::ops::{
-	Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign, Sub, SubAssign,
+	Add, AddAssign, Deref, Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign, Sub, SubAssign,
 };
 
 use crate::{tween::Tweenable, Value};
@@ -14,7 +14,7 @@ use crate::{tween::Tweenable, Value};
 /// of `1.0` will cause a sound to only be output from the right speaker.
 /// A value of `0.0` will cause a sound to be played at an equal volume
 /// from both speakers.
-pub struct Panning(pub f32);
+pub struct Panning(f32);
 
 impl Panning {
 	/// Play the sound from the left speaker only.
@@ -34,6 +34,14 @@ impl Default for Panning {
 impl Tweenable for Panning {
 	fn interpolate(a: Self, b: Self, amount: f64) -> Self {
 		Self(Tweenable::interpolate(a.0, b.0, amount))
+	}
+}
+
+impl Deref for Panning {
+	type Target = f32;
+
+	fn deref(&self) -> &Self::Target {
+		&self.0
 	}
 }
 
