@@ -39,13 +39,17 @@ impl Tweenable for Panning {
 
 impl From<f32> for Panning {
 	fn from(value: f32) -> Self {
+		debug_assert!(
+			value >= -1.0 && value <= 1.0,
+			"panning must be between -1.0 and 1.0 (inclusive)"
+		);
 		Self(value)
 	}
 }
 
 impl From<f32> for Value<Panning> {
 	fn from(value: f32) -> Self {
-		Self::Fixed(Panning(value))
+		Self::Fixed(value.into())
 	}
 }
 
@@ -59,13 +63,13 @@ impl Add<Panning> for Panning {
 	type Output = Panning;
 
 	fn add(self, rhs: Panning) -> Self::Output {
-		Self(self.0 + rhs.0)
+		Self((self.0 + rhs.0).clamp(Self::LEFT.0, Self::RIGHT.0))
 	}
 }
 
 impl AddAssign<Panning> for Panning {
 	fn add_assign(&mut self, rhs: Panning) {
-		self.0 += rhs.0;
+		*self = self.add(rhs);
 	}
 }
 
@@ -73,13 +77,13 @@ impl Sub<Panning> for Panning {
 	type Output = Panning;
 
 	fn sub(self, rhs: Panning) -> Self::Output {
-		Self(self.0 - rhs.0)
+		Self((self.0 - rhs.0).clamp(Self::LEFT.0, Self::RIGHT.0))
 	}
 }
 
 impl SubAssign<Panning> for Panning {
 	fn sub_assign(&mut self, rhs: Panning) {
-		self.0 -= rhs.0;
+		*self = self.sub(rhs);
 	}
 }
 
@@ -87,13 +91,13 @@ impl Mul<f32> for Panning {
 	type Output = Panning;
 
 	fn mul(self, rhs: f32) -> Self::Output {
-		Self(self.0 * rhs)
+		Self((self.0 * rhs).clamp(Self::LEFT.0, Self::RIGHT.0))
 	}
 }
 
 impl MulAssign<f32> for Panning {
 	fn mul_assign(&mut self, rhs: f32) {
-		self.0 *= rhs;
+		*self = self.mul(rhs);
 	}
 }
 
@@ -101,13 +105,15 @@ impl Div<f32> for Panning {
 	type Output = Panning;
 
 	fn div(self, rhs: f32) -> Self::Output {
-		Self(self.0 / rhs)
+		debug_assert!(!rhs.is_nan(), "cannot divide by NaN");
+		debug_assert_ne!(rhs, 0.0, "cannot divide by zero");
+		Self((self.0 / rhs).clamp(Self::LEFT.0, Self::RIGHT.0))
 	}
 }
 
 impl DivAssign<f32> for Panning {
 	fn div_assign(&mut self, rhs: f32) {
-		self.0 /= rhs;
+		*self = self.div(rhs);
 	}
 }
 
@@ -123,12 +129,13 @@ impl Rem<f32> for Panning {
 	type Output = Panning;
 
 	fn rem(self, rhs: f32) -> Self::Output {
-		Self(self.0 % rhs)
+		debug_assert!(!rhs.is_nan(), "cannot get remainder of NaN");
+		Self((self.0 % rhs).clamp(Self::LEFT.0, Self::RIGHT.0))
 	}
 }
 
 impl RemAssign<f32> for Panning {
 	fn rem_assign(&mut self, rhs: f32) {
-		self.0 %= rhs;
+		*self = self.rem(rhs);
 	}
 }
