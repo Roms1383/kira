@@ -44,7 +44,11 @@ impl Default for Decibels {
 
 impl Tweenable for Decibels {
 	fn interpolate(a: Self, b: Self, amount: f64) -> Self {
-		Self(Tweenable::interpolate(a.0, b.0, amount))
+		Self(Tweenable::interpolate(
+			a.0.max(Self::SILENCE.0),
+			b.0.max(Self::SILENCE.0),
+			amount,
+		))
 	}
 }
 
