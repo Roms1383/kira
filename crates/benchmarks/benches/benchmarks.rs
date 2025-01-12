@@ -1,11 +1,11 @@
 use std::{f32::consts::TAU, sync::Arc};
 
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use kira::{
 	backend::mock::{MockBackend, MockBackendSettings},
 	sound::static_sound::{StaticSoundData, StaticSoundSettings},
 	track::MainTrackBuilder,
-	AudioManager, AudioManagerSettings, Frame,
+	AudioManager, AudioManagerSettings, Frame, Tweenable,
 };
 
 fn create_test_sound(num_samples: usize) -> StaticSoundData {
@@ -70,5 +70,24 @@ fn sounds(c: &mut Criterion) {
 	});
 }
 
-criterion_group!(benches, sounds);
+fn without_clamp(from: f64, to: f64, amount: f64) -> f64 {
+	Tweenable::interpolate(from, to, amount)
+}
+
+fn with_clamp(from: f64, to: f64, amount: f64) -> f64 {
+	Tweenable::interpolate(from.clamp(-1., 1.), to.clamp(-1., 1.), amount)
+}
+
+fn interpolate(c: &mut Criterion) {
+	let mut group = c.benchmark_group("interpolate");
+	group.bench_function("without clamp", |b| {
+		b.iter(|| without_clamp(black_box(0.), black_box(1.), black_box(0.5)))
+	});
+	group.bench_function("with clamp", |b| {
+		b.iter(|| with_clamp(black_box(0.), black_box(1.), black_box(0.5)))
+	});
+	group.finish();
+}
+
+criterion_group!(benches, sounds, interpolate);
 criterion_main!(benches);
