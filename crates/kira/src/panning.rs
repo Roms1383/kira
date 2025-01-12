@@ -33,7 +33,11 @@ impl Default for Panning {
 
 impl Tweenable for Panning {
 	fn interpolate(a: Self, b: Self, amount: f64) -> Self {
-		Self(Tweenable::interpolate(a.0, b.0, amount))
+		Self(Tweenable::interpolate(
+			a.0.clamp(Self::LEFT.0, Self::RIGHT.0),
+			b.0.clamp(Self::LEFT.0, Self::RIGHT.0),
+			amount,
+		))
 	}
 }
 
