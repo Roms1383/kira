@@ -6,7 +6,6 @@ use crate::{tween::Tweenable, Value};
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "serde", serde(transparent))]
 /**
 An amount to blend the "dry" and "wet" outputs from an effect.
 
@@ -17,7 +16,7 @@ Valid mix values range from `0.0` to `1.0`, where `0.0` is
 the dry signal only, `1.0` is the wet signal only, and `0.5`
 is an equal mix of both.
 */
-pub struct Mix(pub f32);
+pub struct Mix(#[cfg_attr(feature = "serde", serde(deserialize_with = "deserialize"))] pub f32);
 
 impl Mix {
 	/// Only output the dry signal.
@@ -129,5 +128,22 @@ impl Rem<f32> for Mix {
 impl RemAssign<f32> for Mix {
 	fn rem_assign(&mut self, rhs: f32) {
 		self.0 %= rhs;
+	}
+}
+
+#[cfg(feature = "serde")]
+fn deserialize<'de, D>(deserializer: D) -> Result<f32, D::Error>
+where
+	D: serde::de::Deserializer<'de>,
+{
+	use serde::Deserialize;
+	let value = f32::deserialize(deserializer)?;
+	if (0.0..=1.0).contains(&value) {
+		Ok(value)
+	} else {
+		Err(serde::de::Error::invalid_value(
+			serde::de::Unexpected::Float(value.into()),
+			&"mix must be between 0.0 and 1.0 (inclusive)",
+		))
 	}
 }
