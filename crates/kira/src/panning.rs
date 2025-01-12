@@ -152,3 +152,19 @@ where
 		))
 	}
 }
+
+#[cfg(all(test, feature = "serde"))]
+mod tests {
+	use super::*;
+	use test_case::test_case;
+
+	#[test_case("-1.0", true  ; "minus one")]
+	#[test_case("0.0",  true  ; "zero")]
+	#[test_case("1.0",  true  ; "one")]
+	#[test_case("-2.0", false ; "invalid: minus two")]
+	#[test_case("2.0",  false ; "invalid: two")]
+	#[test_case("NaN",  false ; "invalid: not a number")]
+	fn deserialization(given: &str, expected: bool) {
+		assert_eq!(serde_json::from_str::<Panning>(given).is_ok(), expected);
+	}
+}
