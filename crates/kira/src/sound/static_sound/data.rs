@@ -13,8 +13,7 @@ use std::{
 use crate::{
 	frame::Frame,
 	sound::{EndPosition, IntoOptionalRegion, PlaybackPosition, Region, Sound, SoundData},
-	Tween,
-	Decibels, Panning, PlaybackRate, StartTime, Value,
+	Decibels, Panning, PlaybackRate, StartTime, Tween, Value,
 };
 
 use super::{
