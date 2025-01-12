@@ -28,7 +28,11 @@ impl Mix {
 
 impl Tweenable for Mix {
 	fn interpolate(a: Self, b: Self, amount: f64) -> Self {
-		Self(Tweenable::interpolate(a.0, b.0, amount))
+		Self(Tweenable::interpolate(
+			a.0.clamp(Self::DRY.0, Self::WET.0),
+			b.0.clamp(Self::DRY.0, Self::WET.0),
+			amount,
+		))
 	}
 }
 
