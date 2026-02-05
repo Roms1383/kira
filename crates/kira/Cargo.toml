@@ -22,11 +22,13 @@ symphonia = { version = "0.5.4", optional = true, default-features = false }
 triple_buffer = "8.1.1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.cpal]
-version = "0.17.0"
+git = "https://github.com/RustAudio/cpal"
+rev = "e7ac140945f07fc237decd2c32b4e5f57960dd39"
 optional = true
 
 [target.'cfg(target_arch = "wasm32")'.dependencies.cpal]
-version = "0.17.0"
+git = "https://github.com/RustAudio/cpal"
+rev = "e7ac140945f07fc237decd2c32b4e5f57960dd39"
 optional = true
 features = ["wasm-bindgen"]
 
