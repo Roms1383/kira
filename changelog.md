@@ -1,6 +1,7 @@
 # v0.12.1 - May 25, 2026
 
 - Fix a typo in the docs
+- Update some dependencies
 
 # v0.12.0 - February 18, 2026
 
