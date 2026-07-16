@@ -34,7 +34,20 @@ features = ["wasm-bindgen"]
 send_wrapper = "0.6.0"
 
 [features]
-default = ["cpal", "mp3", "ogg", "vorbis", "flac", "wav", "pcm"]
+default = [
+	"cpal",
+	"cpal-realtime",
+	"cpal-realtime-dbus",
+	"mp3",
+	"ogg",
+	"vorbis",
+	"flac",
+	"wav",
+	"pcm",
+]
+
+cpal-realtime = ["cpal", "cpal/realtime"]
+cpal-realtime-dbus = ["cpal", "cpal/realtime-dbus"]
 
 aac = ["symphonia", "symphonia/aac"]
 adpcm = ["symphonia", "symphonia/adpcm"]
