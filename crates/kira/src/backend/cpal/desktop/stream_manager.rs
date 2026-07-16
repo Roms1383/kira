@@ -11,7 +11,7 @@ use std::{
 
 use super::renderer_with_cpu_usage::RendererWithCpuUsage;
 use cpal::{
-	BufferSize, Device, Stream, StreamConfig, StreamError,
+	BufferSize, Device, Stream, StreamConfig,
 	traits::{DeviceTrait, HostTrait, StreamTrait},
 };
 use rtrb::{Consumer, Producer, PushError, RingBuffer};
@@ -36,7 +36,7 @@ enum State {
 pub(super) struct StreamManagerController {
 	should_drop: Arc<AtomicBool>,
 	num_stream_errors_discarded: Arc<AtomicU64>,
-	handled_stream_error_consumer: Mutex<Consumer<StreamError>>,
+	handled_stream_error_consumer: Mutex<Consumer<cpal::Error>>,
 	thread_handle: Option<JoinHandle<()>>,
 }
 
@@ -59,7 +59,7 @@ impl StreamManagerController {
 		self.num_stream_errors_discarded.load(Ordering::Acquire)
 	}
 
-	pub fn pop_handled_error(&mut self) -> Option<StreamError> {
+	pub fn pop_handled_error(&mut self) -> Option<cpal::Error> {
 		self.handled_stream_error_consumer
 			.get_mut()
 			.unwrap()
@@ -151,15 +151,15 @@ impl StreamManager {
 	/// Restarts the stream if the audio device gets disconnected.
 	fn check_stream(
 		&mut self,
-		unhandled_stream_error_consumer: &mut Consumer<StreamError>,
-		handled_stream_error_producer: &mut Producer<StreamError>,
+		unhandled_stream_error_consumer: &mut Consumer<cpal::Error>,
+		handled_stream_error_producer: &mut Producer<cpal::Error>,
 		num_stream_errors_discarded: &Arc<AtomicU64>,
 	) {
 		if let State::Running { .. } = &self.state {
 			while let Ok(error) = unhandled_stream_error_consumer.pop() {
-				match error {
+				match error.kind() {
 					// check for device disconnection
-					StreamError::DeviceNotAvailable | StreamError::StreamInvalidated => {
+					cpal::ErrorKind::DeviceNotAvailable | cpal::ErrorKind::StreamInvalidated => {
 						self.stop_stream();
 						if let Ok((device, mut config)) = default_device_and_config() {
 							// TODO: gracefully handle errors that occur in this function
@@ -172,7 +172,8 @@ impl StreamManager {
 								.unwrap();
 						}
 					}
-					StreamError::BackendSpecific { err: _ } | StreamError::BufferUnderrun => {}
+					// cpal::ErrorKind::BackendSpecific { err: _ } | StreamError::BufferUnderrun => {}
+					_ => {}
 				}
 				match handled_stream_error_producer.push(error) {
 					Ok(()) => {}
@@ -206,7 +207,7 @@ impl StreamManager {
 		device: &Device,
 		config: &mut StreamConfig,
 		num_stream_errors_discarded: Arc<AtomicU64>,
-	) -> Result<Consumer<StreamError>, Error> {
+	) -> Result<Consumer<cpal::Error>, Error> {
 		let mut renderer =
 			if let State::Idle { renderer } = std::mem::replace(&mut self.state, State::Empty) {
 				renderer
@@ -226,7 +227,7 @@ impl StreamManager {
 			RingBuffer::new(64);
 		let channels = config.channels;
 		let stream = device.build_output_stream(
-			config,
+			*config,
 			move |data: &mut [f32], _| {
 				#[cfg(feature = "assert_no_alloc")]
 				assert_no_alloc::assert_no_alloc(|| {

@@ -1,3 +1,12 @@
+# v0.12.2 - July 16, 2026
+
+- Update to symphonia 0.6 (thanks @Eagisa!)
+- Update to cpal 0.18.1 (thanks @Eagisa!)
+- Re-export cpal in `kira::backend::cpal`
+- Add `cpal-realtime` and `cpal-realtime-dbus` features
+- Fix docs which said a panning of `0.0` is hard left. A hard left panning is `-1.0`
+since Kira v0.10.
+
 # v0.12.1 - May 25, 2026
 
 - Fix a typo in the docs
