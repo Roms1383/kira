@@ -18,7 +18,7 @@ jobs:
       - name: install cpal dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install libasound2-dev
+          sudo apt-get install libasound2-dev libdbus-1-dev pkg-config
       - name: install toolchain ${{ matrix.platform == 'wasm32' && 'and wasm32' || '' }}
         uses: dtolnay/rust-toolchain@stable
         with:
